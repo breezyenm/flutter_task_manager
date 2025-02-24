@@ -7,11 +7,11 @@ A simple Flutter task management application that demonstrates task creation, lo
 - Create, edit, and delete tasks
 - Mark tasks as completed
 - Local data storage using Hive
-- Push notifications 5 minutes after task creation
+- Push notifications at selected due date or 5 minutes after task creation
 
 ## Technical Implementation
 
-- **State Management**: Simple setState for this demo app & provider for theme management
+- **State Management**: Provider for state management
 - **Local Storage**: Hive for efficient local data storage
 - **Notifications**: flutter_local_notifications for push notifications
 - **Architecture**: Repository pattern for data management
@@ -35,8 +35,9 @@ A simple Flutter task management application that demonstrates task creation, lo
 
 ## Dependencies
 
-- hive: ^2.2.3
 - hive_flutter: ^1.1.0
 - flutter_local_notifications: ^16.3.0
-- path_provider: ^2.1.2
-- intl: ^0.19.0
+- provider: ^6.1.2
+- shared_preferences: ^2.5.2
+- intl: ^0.20.2
+- timezone: ^0.9.4
