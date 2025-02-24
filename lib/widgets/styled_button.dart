@@ -24,7 +24,11 @@ class StyledButton extends StatelessWidget {
       },
       style: TextButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        foregroundColor: isPrimary ? Theme.of(context).primaryColor : Colors.black54,
+        foregroundColor: isPrimary
+            ? Theme.of(context).colorScheme.onPrimary
+            : Theme.of(context).colorScheme.onSurface,
+        backgroundColor:
+            isPrimary ? Theme.of(context).colorScheme.primary : null,
         textStyle: const TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w500,

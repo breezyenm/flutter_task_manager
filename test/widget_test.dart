@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_task_manager/main.dart';
 import 'package:flutter_task_manager/repositories/task_repository.dart';
 import 'package:flutter_task_manager/services/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
@@ -19,11 +20,13 @@ void main() {
     await taskRepository.initialize();
     final notificationService = NotificationService();
     await notificationService.initialize();
+    final prefs = await SharedPreferences.getInstance();
 
     // Build our app and trigger a frame.
     await tester.pumpWidget(MyApp(
       taskRepository: taskRepository,
       notificationService: notificationService,
+      prefs: prefs,
     ));
 
     // Verify that our app starts with an empty task list

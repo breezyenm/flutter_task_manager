@@ -1,18 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_task_manager/widgets/task_card.dart';
-import '../models/task.dart';
-import '../repositories/task_repository.dart';
+import 'package:provider/provider.dart';
+import '../widgets/task_card.dart';
 import '../services/notification_service.dart';
 import '../widgets/add_task_sheet.dart';
+import '../providers/task_provider.dart';
 
 class TasksScreen extends StatefulWidget {
-  final TaskRepository taskRepository;
   final NotificationService notificationService;
 
   const TasksScreen({
     super.key,
-    required this.taskRepository,
     required this.notificationService,
   });
 
@@ -21,50 +19,31 @@ class TasksScreen extends StatefulWidget {
 }
 
 class _TasksScreenState extends State<TasksScreen> {
-  late List<Task> _tasks;
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
-    _tasks = widget.taskRepository.getAllTasks();
   }
 
-  _onSearchChanged() {
-    setState(() {});
+  void _onSearchChanged() {
+    Provider.of<TaskProvider>(context, listen: false)
+        .setSearchQuery(_searchController.text);
   }
 
   Future<void> _addTask() async {
     await AddTaskSheet.show(
       context,
       onTaskCreated: (task) async {
-        await widget.taskRepository.addTask(task);
+        await Provider.of<TaskProvider>(context, listen: false).addTask(task);
         await widget.notificationService.scheduleTaskReminder(
           task.id,
           task.title,
           task.dueDate,
         );
-        setState(() {
-          _tasks = widget.taskRepository.getAllTasks();
-        });
       },
     );
-  }
-
-  Future<void> _deleteTask(String id) async {
-    await widget.taskRepository.deleteTask(id);
-    setState(() {
-      _tasks = widget.taskRepository.getAllTasks();
-    });
-  }
-
-  Future<void> _toggleTaskComplete(Task task) async {
-    task.isCompleted = !task.isCompleted;
-    await widget.taskRepository.updateTask(task);
-    setState(() {
-      _tasks = widget.taskRepository.getAllTasks();
-    });
   }
 
   @override
@@ -75,17 +54,6 @@ class _TasksScreenState extends State<TasksScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _tasks = widget.taskRepository
-        .getAllTasks()
-        .where((task) =>
-            task.title
-                .toLowerCase()
-                .contains(_searchController.text.toLowerCase()) ||
-            task.description
-                    ?.toLowerCase()
-                    .contains(_searchController.text.toLowerCase()) ==
-                true)
-        .toList();
     return Scaffold(
       body: Column(
         children: [
@@ -99,14 +67,27 @@ class _TasksScreenState extends State<TasksScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: _tasks.length,
-              itemBuilder: (context, index) {
-                final task = _tasks[index];
-                return TaskCard(
-                  task: task,
-                  toggleTaskComplete: _toggleTaskComplete,
-                  deleteTask: _deleteTask,
+            child: Consumer<TaskProvider>(
+              builder: (context, taskProvider, child) {
+                final tasks = taskProvider.tasks;
+                if (tasks.isEmpty) {
+                  return Center(
+                    child: Text(
+                      _searchController.text.isEmpty
+                          ? 'No tasks yet'
+                          : 'No tasks found',
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  itemCount: tasks.length,
+                  padding: const EdgeInsets.all(16),
+                  itemBuilder: (context, index) {
+                    final task = tasks[index];
+                    return TaskCard(
+                      task: task,
+                    );
+                  },
                 );
               },
             ),

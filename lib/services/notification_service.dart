@@ -52,7 +52,11 @@ class NotificationService {
     );
 
     // Configure iOS-specific notification details
-    const iOSDetails = DarwinNotificationDetails();
+    const iOSDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
 
     // Combine platform-specific details
     const notificationDetails = NotificationDetails(
@@ -61,11 +65,13 @@ class NotificationService {
     );
 
     // Calculate when to show the notification
-    // If dueDate is provided, schedule for that time
-    // Otherwise, schedule for 5 minutes from now
+    final now = DateTime.now();
     final scheduledDate = dueDate != null
-        ? tz.TZDateTime.from(dueDate, tz.local)
-        : tz.TZDateTime.now(tz.local).add(const Duration(minutes: 5));
+        ? tz.TZDateTime(tz.local, dueDate.year, dueDate.month, dueDate.day,
+            dueDate.hour, dueDate.minute, dueDate.second, dueDate.millisecond)
+        : tz.TZDateTime(tz.local, now.year, now.month, now.day, now.hour,
+                now.minute, now.second, now.millisecond)
+            .add(const Duration(minutes: 5));
 
     // Schedule the notification
     await _notifications.zonedSchedule(

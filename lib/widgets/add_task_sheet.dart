@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/task.dart';
 import 'styled_text_field.dart';
 import 'styled_button.dart';
@@ -56,12 +57,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
       key: formKey,
       child: ListView(
         physics: const ClampingScrollPhysics(),
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 16,
-          right: 16,
-          top: 16,
-        ),
+        padding: const EdgeInsets.all(16),
         shrinkWrap: true,
         children: [
           const Text(
@@ -71,9 +67,10 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           StyledTextField(
             controller: titleController,
+            label: 'Title',
             hintText: 'Enter task title',
             autofocus: true,
             validator: (value) {
@@ -83,14 +80,15 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
               return null;
             },
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           StyledTextField(
             controller: descriptionController,
+            label: 'Description',
             hintText: 'Enter task description',
             maxLines: 3,
             contentPadding: const EdgeInsets.all(12),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           StatefulBuilder(
             builder: (context, setState) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,7 +118,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),
                     decoration: ShapeDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       shape: RoundedRectangleBorder(
                         side: const BorderSide(width: 1),
                         borderRadius: BorderRadius.circular(8),
@@ -131,14 +129,18 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                         Expanded(
                           child: Text(
                             selectedDueDate != null
-                                ? '${selectedDueDate!.day}/${selectedDueDate!.month}/${selectedDueDate!.year}'
+                                ? DateFormat('MMM dd, yyyy')
+                                    .format(selectedDueDate!)
                                 : 'Select due date',
                             style: TextStyle(
                               color: selectedDueDate != null
-                                  ? Colors.black
-                                  : Colors.black.withValues(
-                                      alpha: 0.36,
-                                    ),
+                                  ? Theme.of(context).colorScheme.onSurface
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(
+                                        alpha: 0.36,
+                                      ),
                               fontSize: 15,
                               fontWeight: FontWeight.w400,
                             ),
@@ -147,9 +149,12 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                         Icon(
                           Icons.calendar_today,
                           size: 20,
-                          color: Colors.black.withValues(
-                            alpha: 0.36,
-                          ),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(
+                                alpha: 0.36,
+                              ),
                         ),
                       ],
                     ),
@@ -158,37 +163,41 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              StyledButton(
-                text: 'Cancel',
-                onPressed: () => Navigator.pop(context),
-              ),
-              const SizedBox(width: 8),
-              StyledButton(
-                text: 'Save',
-                onPressed: () {
-                  if (formKey.currentState!.validate()) {
-                    final task = Task(
-                      id: DateTime.now().millisecondsSinceEpoch.toString(),
-                      title: titleController.text.trim(),
-                      description: descriptionController.text.trim(),
-                      createdAt: DateTime.now(),
-                      dueDate: selectedDueDate,
-                    );
+          const SizedBox(height: 40),
+          SafeArea(
+            minimum: MediaQuery.of(context).viewInsets,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                StyledButton(
+                  text: 'Cancel',
+                  onPressed: () => Navigator.pop(context),
+                ),
+                const SizedBox(width: 8),
+                StyledButton(
+                  text: 'Save',
+                  onPressed: () {
+                    if (formKey.currentState!.validate()) {
+                      final task = Task(
+                          id: DateTime.now().millisecondsSinceEpoch.toString(),
+                          title: titleController.text.trim(),
+                          description: descriptionController.text.trim(),
+                          createdAt: DateTime.now(),
+                          dueDate: selectedDueDate
+                          // uncomment below to automatically set due date to 5 minutes if not set
+                          // ?? DateTime.now().add(Duration(minutes: 5)),
+                          );
 
-                    widget.onTaskCreated(task);
-                    Navigator.pop(context);
-                  }
-                },
-                isPrimary: true,
-                formKey: formKey,
-              ),
-            ],
+                      widget.onTaskCreated(task);
+                      Navigator.pop(context);
+                    }
+                  },
+                  isPrimary: true,
+                  formKey: formKey,
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
         ],
       ),
     );
